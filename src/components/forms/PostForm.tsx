@@ -19,7 +19,7 @@ import { PostValidation } from "@/lib/validation";
 import { useToast } from "@/components/ui/use-toast";
 import { useUserContext } from "@/context/AuthContext";
 import { FileUploader, Loader } from "@/components/shared";
-import { useCreatePost, useUpdatePost } from "@/lib/react-query/queriesAndMutations";
+import { useCreatePost, useUpdatePost } from "@/lib/react-query/queries";
 
 type PostFormProps = {
     post?: Models.Document;

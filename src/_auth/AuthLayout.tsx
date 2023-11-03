@@ -1,16 +1,20 @@
-import { Outlet, Navigate } from "react-router-dom"
+import { Outlet, Navigate } from "react-router-dom";
 
-const AuthLayout = () => {
-    const isAuthenticated = false
+import { useUserContext } from "@/context/AuthContext";
+
+export default function AuthLayout() {
+    const { isAuthenticated } = useUserContext();
+
     return (
         <>
-            { isAuthenticated ? (
+            {isAuthenticated ? (
                 <Navigate to="/" />
             ) : (
                 <>
                     <section className="flex flex-1 justify-center items-center flex-col py-10">
                         <Outlet />
                     </section>
+
                     <img
                         src="/assets/images/side-img.svg"
                         alt="logo"
@@ -19,7 +23,5 @@ const AuthLayout = () => {
                 </>
             )}
         </>
-    )
+    );
 }
-
-export default AuthLayout

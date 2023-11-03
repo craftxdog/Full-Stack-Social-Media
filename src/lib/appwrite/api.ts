@@ -1,8 +1,13 @@
-import { ID, Query } from 'appwrite'
+import { ID, Query } from "appwrite";
 
-import { account, appwriteConfig, avatars, database, storage } from './config';
-import { INewPost, INewUser, IUpdatePost, IUpdateUser } from '@/types';
+import { appwriteConfig, account, database, storage, avatars } from "./config";
+import { IUpdatePost, INewPost, INewUser, IUpdateUser } from "@/types";
 
+// ============================================================
+// AUTH
+// ============================================================
+
+// ============================== SIGN UP
 export async function createUserAccount(user: INewUser) {
     try {
         const newAccount = await account.create(
@@ -10,25 +15,28 @@ export async function createUserAccount(user: INewUser) {
             user.email,
             user.password,
             user.name
-        )
+        );
 
-        if (!newAccount) throw Error
-        const avatarUrl = avatars.getInitials(user.name)
+        if (!newAccount) throw Error;
+
+        const avatarUrl = avatars.getInitials(user.name);
+
         const newUser = await saveUserToDB({
             accountId: newAccount.$id,
             name: newAccount.name,
             email: newAccount.email,
             username: user.username,
             imageUrl: avatarUrl,
-        })
+        });
 
-        return newUser
+        return newUser;
     } catch (error) {
-        console.log(error)
-        return error
+        console.log(error);
+        return error;
     }
 }
 
+// ============================== SAVE USER TO DB
 export async function saveUserToDB(user: {
     accountId: string;
     email: string;
@@ -41,24 +49,27 @@ export async function saveUserToDB(user: {
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
             ID.unique(),
-            user,
-        )
-        return newUser
+            user
+        );
+
+        return newUser;
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
+// ============================== SIGN IN
 export async function signInAccount(user: { email: string; password: string }) {
     try {
-        const session = await account.createEmailSession(user.email, user.password)
-        return session
+        const session = await account.createEmailSession(user.email, user.password);
+
+        return session;
     } catch (error) {
-        console.log(error)
+        console.log(error);
     }
 }
 
-
+// ============================== GET ACCOUNT
 export async function getAccount() {
     try {
         const currentAccount = await account.get();
@@ -69,7 +80,7 @@ export async function getAccount() {
     }
 }
 
-
+// ============================== GET USER
 export async function getCurrentUser() {
     try {
         const currentAccount = await getAccount();
@@ -91,6 +102,7 @@ export async function getCurrentUser() {
     }
 }
 
+// ============================== SIGN OUT
 export async function signOutAccount() {
     try {
         const session = await account.deleteSession("current");
@@ -101,51 +113,11 @@ export async function signOutAccount() {
     }
 }
 
-export async function uploadFile(file: File) {
-    try {
-        const uploadedFile = await storage.createFile(
-            appwriteConfig.storageId,
-            ID.unique(),
-            file
-        );
+// ============================================================
+// POSTS
+// ============================================================
 
-        return uploadedFile;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-export function getFilePreview(fileId: string) {
-    try {
-        const fileUrl = storage.getFilePreview(
-            appwriteConfig.storageId,
-            fileId,
-            2000,
-            2000,
-            "top",
-            100
-        );
-
-        if (!fileUrl) throw Error;
-
-        return fileUrl;
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-// ============================== DELETE FILE
-export async function deleteFile(fileId: string) {
-    try {
-        await storage.deleteFile(appwriteConfig.storageId, fileId);
-
-        return { status: "ok" };
-    } catch (error) {
-        console.log(error);
-    }
-}
-
-
+// ============================== CREATE POST
 export async function createPost(post: INewPost) {
     try {
         // Upload file to appwrite storage
@@ -189,6 +161,53 @@ export async function createPost(post: INewPost) {
     }
 }
 
+// ============================== UPLOAD FILE
+export async function uploadFile(file: File) {
+    try {
+        const uploadedFile = await storage.createFile(
+            appwriteConfig.storageId,
+            ID.unique(),
+            file
+        );
+
+        return uploadedFile;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// ============================== GET FILE URL
+export function getFilePreview(fileId: string) {
+    try {
+        const fileUrl = storage.getFilePreview(
+            appwriteConfig.storageId,
+            fileId,
+            2000,
+            2000,
+            "top",
+            100
+        );
+
+        if (!fileUrl) throw Error;
+
+        return fileUrl;
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// ============================== DELETE FILE
+export async function deleteFile(fileId: string) {
+    try {
+        await storage.deleteFile(appwriteConfig.storageId, fileId);
+
+        return { status: "ok" };
+    } catch (error) {
+        console.log(error);
+    }
+}
+
+// ============================== GET POSTS
 export async function searchPosts(searchTerm: string) {
     try {
         const posts = await database.listDocuments(
@@ -227,6 +246,7 @@ export async function getInfinitePosts({ pageParam }: { pageParam: number }) {
     }
 }
 
+// ============================== GET POST BY ID
 export async function getPostById(postId?: string) {
     if (!postId) throw Error;
 
@@ -245,6 +265,7 @@ export async function getPostById(postId?: string) {
     }
 }
 
+// ============================== UPDATE POST
 export async function updatePost(post: IUpdatePost) {
     const hasFileToUpdate = post.file.length > 0;
 
@@ -308,6 +329,7 @@ export async function updatePost(post: IUpdatePost) {
     }
 }
 
+// ============================== DELETE POST
 export async function deletePost(postId?: string, imageId?: string) {
     if (!postId || !imageId) return;
 
@@ -328,6 +350,7 @@ export async function deletePost(postId?: string, imageId?: string) {
     }
 }
 
+// ============================== LIKE / UNLIKE POST
 export async function likePost(postId: string, likesArray: string[]) {
     try {
         const updatedPost = await database.updateDocument(
@@ -347,6 +370,7 @@ export async function likePost(postId: string, likesArray: string[]) {
     }
 }
 
+// ============================== SAVE POST
 export async function savePost(userId: string, postId: string) {
     try {
         const updatedPost = await database.createDocument(
@@ -366,7 +390,7 @@ export async function savePost(userId: string, postId: string) {
         console.log(error);
     }
 }
-
+// ============================== DELETE SAVED POST
 export async function deleteSavedPost(savedRecordId: string) {
     try {
         const statusCode = await database.deleteDocument(
@@ -383,6 +407,7 @@ export async function deleteSavedPost(savedRecordId: string) {
     }
 }
 
+// ============================== GET USER'S POST
 export async function getUserPosts(userId?: string) {
     if (!userId) return;
 
@@ -401,7 +426,7 @@ export async function getUserPosts(userId?: string) {
     }
 }
 
-
+// ============================== GET POPULAR POSTS (BY HIGHEST LIKE COUNT)
 export async function getRecentPosts() {
     try {
         const posts = await database.listDocuments(
@@ -424,11 +449,17 @@ export async function getRecentPosts() {
 
 // ============================== GET USERS
 export async function getUsers(limit?: number) {
+    const queries: any[] = [Query.orderDesc("$createdAt")];
+
+    if (limit) {
+        queries.push(Query.limit(limit));
+    }
+
     try {
         const users = await database.listDocuments(
             appwriteConfig.databaseId,
             appwriteConfig.userCollectionId,
-            [Query.orderDesc("$createdAt"), Query.limit(10)]
+            queries
         );
 
         if (!users) throw Error;

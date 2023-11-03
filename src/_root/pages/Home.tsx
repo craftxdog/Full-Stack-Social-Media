@@ -2,18 +2,19 @@ import { Models } from "appwrite";
 
 // import { useToast } from "@/components/ui/use-toast";
 import { Loader, PostCard, UserCard } from "@/components/shared";
-import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queriesAndMutations";
-
+import { useGetRecentPosts, useGetUsers } from "@/lib/react-query/queries";
 
 const Home = () => {
+    // const { toast } = useToast();
+
     const {
         data: posts,
-        isPending: isPostLoading,
+        isLoading: isPostLoading,
         isError: isErrorPosts,
     } = useGetRecentPosts();
     const {
         data: creators,
-        isPending: isUserLoading,
+        isLoading: isUserLoading,
         isError: isErrorCreators,
     } = useGetUsers(10);
 
@@ -29,6 +30,7 @@ const Home = () => {
             </div>
         );
     }
+
     return (
         <div className="flex flex-1">
             <div className="home-container">
@@ -63,7 +65,7 @@ const Home = () => {
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Home
+export default Home;
